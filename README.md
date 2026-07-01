@@ -1,2 +1,90 @@
 # Personal-Knowledge-chatbot
 生产级智能知识库与 Agent 检索增强问答系统
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-green.svg)
+![LangChain](https://img.shields.io/badge/LangChain-0.2+-orange.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+
+</div>
+
+---
+
+## 📖 项目简介
+
+本项目是一个**面向个人与小型团队的生产级 RAG 知识库问答系统**。用户上传 PDF、Word、图片等格式的文档后，系统通过智能解析、层级分块、混合检索（向量 + 关键词）和 Agent 动态工具调用，给出**带页码/章节引用**的高可信答案。
+
+**核心亮点：**
+- 🤖 **Agent 工具化检索** — 模型自主决定调用语义搜索、关键词搜索、按页码/按章节获取四类工具，避免固定 Top-K 堆砌
+- 🔀 **混合检索引擎** — ChromaDB（稠密向量）+ BM25（稀疏关键词）双路召回，兼顾语义理解与精确匹配
+- 📄 **层级分块与血缘元数据** — 基于标题树（H1-H6）分块，每个块携带 doc_id、page_num、section_path、table_id 等完整溯源信息
+- ✅ **强制引用生成与评估** — LLM 回答必须附带“《文档名》第X页，[章节]：‘原文’”格式引用；自动检测页码幻觉与表格完整性
+- 🧩 **智能解析器路由** — 根据文件类型和内容自动选择 Marker（本地 GPU）、LlamaParse（云端）、DashScope OCR（多模态）等解析器，成本降低 60%
+
+---
+
+## 🚀 功能特性
+
+| 功能模块 | 说明 |
+| :--- | :--- |
+| **文档上传** | 支持 PDF（数字/扫描）、DOCX、DOC、TXT、MD、CSV、JSON、HTML、代码文件、图片（PNG/JPG/TIFF）等 15+ 格式 |
+| **自动解析路由** | 数字短文档 → Marker（本地 ML，保留标题/表格）；长文档 → LlamaParse（高吞吐）；扫描件/图片 → DashScope qwen-vl-ocr（多模态 OCR） |
+| **层级分块** | 基于 Markdown 标题树（H1-H6）切分，保持语义完整，不跨标题拼接 |
+| **血缘元数据** | 每个分块携带 `doc_id`、`page_num`、`section_path`、`heading_hierarchy`、`table_id`、`clause_num` 等字段，支持精确追溯 |
+| **混合检索** | ChromaDB（BGE-small-zh-v1.5 512维 稠密向量）+ BM25（jieba 中文分词 稀疏索引）双路召回 |
+| **Agent 检索** | 基于 LangChain `create_agent`，支持语义搜索、关键词搜索、按页/按章节获取四种工具，自主决策 |
+| **强制引用生成** | 系统 Prompt 强制每条事实附带“根据《文档名》第X页，[章节路径]：‘引用原文’”格式引用 |
+| **质量评估** | 硬检查：页码幻觉检测（零伪造页码）+ 表格完整性校验（关键数据不丢失） |
+| **RESTful API** | 上传、问答、列表、删除、获取 TOC、获取指定页面内容，提供 Swagger 文档 |
+| **持久化** | ChromaDB 本地持久化 + BM25 pickle 持久化，服务重启恢复索引 |
+
+---
+
+## 🏗️ 技术架构
+┌─────────────────────────────────────────────────────────────────────┐
+│ FastAPI Web 层 │
+│ /upload /ask /api/documents /api/documents/{id} /health │
+└─────────────────────────────────────────────────────────────────────┘
+│
+▼
+┌─────────────────────────────────────────────────────────────────────┐
+│ QAService（问答编排层） │
+│ ┌──────────────────┐ ┌──────────────────────────────────────┐ │
+│ │ RetrievalAgent │ → │ CitationGenerator（强制引用生成） │ │
+│ │ (工具调用 4类工具) │ │ + Evaluator（页码/表格硬检查） │ │
+│ └──────────────────┘ └──────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────┘
+│
+▼
+┌─────────────────────────────────────────────────────────────────────┐
+│ DocumentService（文档生命周期） │
+│ ┌──────────────┐ ┌──────────────┐ ┌──────────────────────────┐ │
+│ │ ParserRouter │→│HierarchyChunker│→│ Dual Index (Chroma+BM25) │ │
+│ └──────────────┘ └──────────────┘ └──────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────┘
+│
+▼
+┌─────────────────────────────────────────────────────────────────────┐
+│ 解析器生态 │
+│ Marker（本地ML）│ LlamaParse（云端）│ DashScope OCR（多模态） │
+│ DashScope Markdown │ PlainText（后备） │
+└─────────────────────────────────────────────────────────────────────┘
+
+text
+
+---
+
+## 🛠️ 快速开始
+
+### 环境要求
+
+- Python 3.10+
+- （可选）NVIDIA GPU（Marker 推荐）
+- （可选）API Keys：DeepSeek、DashScope、LlamaCloud
+
+### 1. 克隆项目
+
+```bash
+git clone https://github.com/yourusername/knowledge-base-qa.git
+cd knowledge-base-qa
