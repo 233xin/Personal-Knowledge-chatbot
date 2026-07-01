@@ -1,0 +1,29 @@
+# Core framework
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+chromadb>=0.4.22
+langchain>=0.2.0
+langchain-chroma>=0.1.0
+langchain-huggingface>=0.1.0
+langchain-openai>=0.2.0
+langchain-text-splitters>=0.2.0
+sentence-transformers>=3.0.0
+python-multipart>=0.0.9
+python-dotenv>=1.0.0
+numpy>=1.20.0
+
+# Document parsing
+pypdf>=4.0.0
+python-docx>=1.0.0
+olefile>=0.47
+marker-pdf>=1.0.0
+llama-parse>=0.5.0
+pymupdf>=1.23.0
+openai>=1.0.0
+
+# Keyword search (BM25)
+rank-bm25>=0.2.2
+jieba>=0.42.1
+
+# Image processing
+Pillow>=10.0.0
