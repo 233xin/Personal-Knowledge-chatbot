@@ -75,16 +75,3 @@ text
 
 ---
 
-## 🛠️ 快速开始
-
-### 环境要求
-
-- Python 3.10+
-- （可选）NVIDIA GPU（Marker 推荐）
-- （可选）API Keys：DeepSeek、DashScope、LlamaCloud
-
-### 1. 克隆项目
-
-```bash
-git clone https://github.com/yourusername/knowledge-base-qa.git
-cd knowledge-base-qa
