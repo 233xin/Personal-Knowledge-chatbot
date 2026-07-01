@@ -1,2 +1,2 @@
 # Personal-Knowledge-chatbot
-基于 RAG（检索增强生成）的轻量级个人知识库问答系统
+生产级智能知识库与 Agent 检索增强问答系统
